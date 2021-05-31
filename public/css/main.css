@@ -1,0 +1,32 @@
+body{
+    background-color: rgb(152, 193, 217);
+}
+
+.content {
+    text-align: center;
+    margin:10px;
+}
+
+.flex-container {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.flex-container > div {
+    margin: 0px;
+    text-align: center;
+    line-height: 50px;
+    font-size: 20px;
+}
+
+.maze {
+    border: 2px solid black;
+    width: 800px;
+}
+
+.map-tile {
+    border: 1px dashed rgb(224, 224, 224);
+    cursor: pointer;
+    height: 40px;
+    width: 40px;
+}
