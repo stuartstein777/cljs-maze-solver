@@ -10,17 +10,20 @@
 (rf/reg-event-db
  :initialize
  (fn [_ _]
-   {:maze (for [x (range 0 5)]
-            (for [y (range 0 5)]
-              {:coord [x y] :state :none}))
+   {:maze (into [] (for [x (range 0 20)]
+                     (into [] (for [y (range 0 20)]
+                                {:coord [x y] :state :none}))))
     :path []}))
 
 (rf/reg-event-db
  :toggle-cell
- (fn [{:keys [maze] :as db} [_ [x y]]]
-   (js/console.log (str "(" x "," y ")"))
+ (fn [{:keys [maze] :as db} [_ [row col]]]
+   (js/console.log maze)
     (let [toggle {:wall :none :none :wall}]
-      (update-in db maze [y x] #(update % :state toggle)))))
+      (update-in db
+                 [:maze]
+                 (fn [m]
+                   (update-in m [row col :state] #(toggle %)))))))
 
 ;; -- Subscriptions --------------------------------------------------
 (rf/reg-sub
@@ -56,13 +59,15 @@
 (defn maze []
   (let [mz @(rf/subscribe [:maze])]
     [:div.maze
-     (map (partial maze-row mz) (range 0 5))]))
+     (map (partial maze-row mz) (range 0 20))]))
 
 ;; -- App ------------------------------------------------------------
 (defn app []
   [:div.container
    [:h1 "Maze solver"]
    [maze]])
+
+;; -- Dev Events -----------------------------------------------------
 
 ;; -- After-Load -----------------------------------------------------
 ;; Do this after the page has loaded.
