@@ -25,14 +25,18 @@ body{
 }
 
 .map-tile {
-    border: 1px dashed rgb(224, 224, 224);
+    border: 1px dotted rgb(224, 224, 224);
     cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
     height: 40px;
     width: 40px;
 }
 
 .wall {
-    background-color:brown;
+    background-color:black;
+    border: 1px solid black;
 }
 
 .open {
@@ -45,4 +49,23 @@ body{
 
 .start {
     background-color: dodgerblue;
+}
+
+.walking-man {
+    padding-top: 10px;
+    padding-left: 12px;
+}
+
+.finish-flag {
+    padding-top: 10px;
+    padding-left: 12px;
+}
+
+.toggle-btn {
+    margin-right: 5px;
+}
+
+.setting-indicator {
+    font-size: 1.4em;
+    font-weight: bolder;
 }
