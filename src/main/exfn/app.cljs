@@ -1,65 +1,31 @@
 (ns exfn.app
   (:require [reagent.dom :as dom]
             [re-frame.core :as rf]
-            [clojure.string :as str]
-            [clojure.set :as set]))
+            [exfn.events]
+            [exfn.subscriptions]))
 
 ;; -- Helpers -------------------------------------------------------
 
-;;-- Events and Effects ---------------------------------------------
-(rf/reg-event-db
- :initialize
- (fn [_ _]
-   {:maze (into [] (for [x (range 0 20)]
-                     (into [] (for [y (range 0 20)]
-                                {:coord [x y] :state :none}))))
-    :path []}))
-
-(rf/reg-event-db
- :toggle-cell
- (fn [{:keys [maze] :as db} [_ [row col]]]
-   (js/console.log maze)
-    (let [toggle {:wall :none :none :wall}]
-      (update-in db
-                 [:maze]
-                 (fn [m]
-                   (update-in m [row col :state] #(toggle %)))))))
-
-;; -- Subscriptions --------------------------------------------------
-(rf/reg-sub
- :maze
- (fn [db _]
-   (db :maze)))
-
-(rf/reg-sub
- :path
- (fn [db _]
-   (db :maze)))
-
 ;; -- Reagent Forms --------------------------------------------------
-(defn map-tile-background-color [state]
-  (condp = state
-    :wall :gray
-    :start :blue
-    :end :green
-    :route :goldenyellow
-    :none :white))
+(defn maze-tile [i {:keys [state] :as tile}]
+  (let [attr {:key i
+              :on-click #(rf/dispatch [:toggle-cell i])}]
+    ({:wall [:div.map-tile.wall attr]
+      :none [:div.map-tile.open attr]
+      :start [:div.map-tile.start [:i.fas.fa-walking attr]]
+      :finish [:div.map-tile.finish [:i.fas.fa-flag-checkered attr]]} state)))
 
-(defn maze-tile [{:keys [coord state] :as tile}]
-  [:div.map-tile {:key coord
-                  :style {:background-color (map-tile-background-color state)}
-                  :on-click #(rf/dispatch [:toggle-cell coord])}])
-
-(defn maze-row [mz row]
-  [:div.flex-container
-   (let [row (nth mz row)]
-     (for [r row]
-       [maze-tile r]))])
-
+;; map the maze-title map over the maze
+;; partition and split.
+;; on-click doesnt need x y coord, it just needs index.
+;; how to get index to here. map indexed
 (defn maze []
-  (let [mz @(rf/subscribe [:maze])]
-    [:div.maze
-     (map (partial maze-row mz) (range 0 20))]))
+  (let [mz @(rf/subscribe [:maze])
+        tiles (->> mz
+                   (map-indexed maze-tile)
+                   (partition 20)
+                   (map (fn [row] [:div.flex-container row])))]
+    [:div tiles]))
 
 ;; -- App ------------------------------------------------------------
 (defn app []
@@ -68,7 +34,17 @@
    [maze]])
 
 ;; -- Dev Events -----------------------------------------------------
+(rf/reg-event-db
+ :set-finish
+ (fn [db [_ i]]
+   (assoc-in db [:maze i :state] :finish)))
 
+(rf/reg-event-db
+ :set-start
+ (fn [db [_ i]]
+   (assoc-in db [:maze i :state] :start)))
+
+(comment (rf/dispatch [:set-start 130]))
 ;; -- After-Load -----------------------------------------------------
 ;; Do this after the page has loaded.
 ;; Initialize the initial db state.

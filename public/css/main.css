@@ -30,3 +30,19 @@ body{
     height: 40px;
     width: 40px;
 }
+
+.wall {
+    background-color:brown;
+}
+
+.open {
+    background-color: white;
+}
+
+.finish {
+    background-color:seagreen;
+}
+
+.start {
+    background-color: dodgerblue;
+}
