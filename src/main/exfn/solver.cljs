@@ -89,6 +89,18 @@
                 (find-route (map-info :start) updated-closed [(map-info :goal)])
                 (recur updated-closed updated-open)))))))
 
+(defn solve [maze] 
+  (let [prepared-maze (->> maze
+                           (map :state)
+                           (partition 20)
+                           (map vec)
+                           vec)
+        path (->> (find-path prepared-maze)
+                  (drop 1)
+                  (butlast))]
+    (->> path
+         (map (fn [[x y]] (+ (* 20 x) y)))
+         (set))))
 
 (comment '[[:none :none :none :none :wall :wall :none :wall :none :wall :none :none :none :wall :none :none :none :none :wall :none]
            [:none :wall :wall :none :wall :none :start :wall :wall :wall :none :wall :none :wall :none :wall :wall :wall :wall :wall]

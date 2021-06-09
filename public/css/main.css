@@ -69,3 +69,10 @@ body{
     font-size: 1.4em;
     font-weight: bolder;
 }
+
+.no-solution {
+    color:rgb(173, 34, 10);
+    font-size: 1.4em;
+    font-weight: bolder;
+    margin-left: 15px;   
+}

@@ -17,14 +17,14 @@
              {:key i
               :on-click #(rf/dispatch [:toggle-cell i])
               :style {:background-color (if (path i) "goldenrod" "white")}}
-             [:div {:style {:border-bottom "1px dotted white"
-                            :border-right  "1px dotted white"
+             [:div {:style {:border-bottom "0px dotted grey"
+                            :border-right  "0px dotted grey"
                             :width         "50%"
                             :height        "50%"}}]
-             [:div {:style {:border-bottom "1px dotted white"
+             [:div {:style {:border-bottom "0px dotted white"
                             :width         "50%"
                             :height        "50%"}}]
-             [:div {:style {:border-right "1px dotted white"
+             [:div {:style {:border-right "0px dotted white"
                             :width        "50%"
                             :height       "50%"}}]
              [:div {:style {:width  "50%"
@@ -53,7 +53,8 @@
   (let [start-btn-title @(rf/subscribe [:start-btn-title])
         finish-btn-title @(rf/subscribe [:finish-btn-title])
         toggle-walls-btn-title @(rf/subscribe [:wall-btn-title])
-        setting @(rf/subscribe [:setting])]
+        setting @(rf/subscribe [:setting])
+        path @(rf/subscribe [:path])]
     [:div {:style {:margin-top 10}}
      [:button.btn.btn-primary.toggle-btn
       {:on-click #(rf/dispatch [:change-current-click :start])}
@@ -67,6 +68,9 @@
      [:button.btn.btn-primary
       {:on-click #(rf/dispatch [:solve])}
       "Solve"]
+     [:label.no-solution
+      {:style {:visibility (if (= #{} path) :visible :hidden)}}
+      "No solution!"]
      [:div.setting-indicator (str "Setting " (subs (str setting) 1))]]))
 
 ;; -- App ------------------------------------------------------------
