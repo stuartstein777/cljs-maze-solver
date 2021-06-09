@@ -8,7 +8,7 @@
    {:finish           nil
     :finish-btn-title "Select Finish"
     :maze             (into [] (for [_ (range 0 (* 20 20))] {:state :none}))
-    :path             []
+    :path             #{}
     :setting          :wall
     :start            nil
     :start-btn-title  "Select Start"
@@ -59,6 +59,5 @@
                          (map (fn [[x y]] (+ (* 20 x) y)))
                          (set))]
      (-> db 
-         (assoc :path path)
-         (assoc :maze (vec (map-indexed (fn [idx tile] (if (maze-route idx) {:state :path} tile)) maze)))))))
+         (assoc :path maze-route)))))
 

@@ -13,8 +13,10 @@
   (let [attr {:key i
               :on-click #(rf/dispatch [:toggle-cell i])}]
     ({:wall [:div.map-tile.wall attr]
-      :path [:div.map-tile.path
-             attr
+      :none [:div.map-tile.open
+             {:key i
+              :on-click #(rf/dispatch [:toggle-cell i])
+              :style {:background-color (if (path i) "goldenrod" "white")}}
              [:div {:style {:border-bottom "1px dotted white"
                             :border-right  "1px dotted white"
                             :width         "50%"
@@ -27,7 +29,6 @@
                             :height       "50%"}}]
              [:div {:style {:width  "50%"
                             :height "50%"}}]]
-      :none [:div.map-tile.open attr]
       :start [:div.map-tile.start attr
               [:i.fas.fa-walking.walking-man]]
       :finish [:div.map-tile.finish attr
@@ -78,31 +79,35 @@
 ;; -- Dev Events -----------------------------------------------------
 
 (def test-maze 
-  (map (fn [m] {:state m}) [:none :none :none :none :wall :wall :none :wall :none :wall :none :none :none :wall :none :none :none :none :wall :none
-                           :none :wall :wall :none :wall :none :start :wall :wall :wall :none :wall :none :wall :none :wall :wall :wall :wall :wall
-                           :none :none :wall :none :wall :none :none :wall :none :none :none :wall :none :wall :none :none :none :wall :none :wall
-                           :none :wall :wall :none :wall :none :wall :wall :none :wall :wall :wall :none :wall :wall :wall :none :wall :none :wall
-                           :wall :wall :none :none :wall :none :none :none :none :wall :none :none :none :none :wall :none :none :none :none :none
-                           :none :wall :none :wall :wall :none :wall :wall :wall :wall :wall :wall :wall :none :wall :wall :none :wall :wall :none
-                           :none :none :none :none :none :none :none :none :none :none :none :wall :finish :none :none :wall :none :wall :none :none
-                           :wall :none :wall :wall :none :none :wall :wall :wall :none :none :wall :none :wall :wall :wall :none :wall :wall :none
-                           :wall :wall :wall :none :none :wall :wall :none :wall :wall :wall :wall :none :wall :none :none :none :wall :none :none
-                           :wall :none :none :none :wall :wall :none :none :none :none :none :wall :none :wall :none :wall :none :wall :none :none
-                           :none :none :wall :wall :wall :none :none :wall :none :none :wall :wall :wall :wall :none :wall :none :wall :wall :none
-                           :none :wall :wall :none :none :none :none :wall :wall :wall :wall :none :none :none :none :wall :none :none :wall :wall
-                           :none :wall :none :none :wall :none :wall :wall :none :none :wall :none :none :wall :none :wall :none :none :none :none
-                           :none :wall :wall :none :wall :none :none :wall :none :none :none :none :wall :wall :wall :wall :wall :wall :none :wall
-                           :none :none :wall :none :wall :none :none :wall :none :wall :wall :wall :wall :none :none :wall :none :none :none :wall
-                           :wall :none :wall :none :wall :none :none :wall :none :wall :none :none :none :none :none :wall :none :wall :none :wall
-                           :wall :none :wall :none :wall :none :none :wall :wall :wall :none :wall :none :none :none :none :none :none :none :wall
-                           :wall :none :wall :wall :wall :none :none :none :none :none :none :wall :wall :wall :wall :wall :none :wall :wall :wall
-                           :wall :none :wall :none :wall :wall :wall :wall :wall :wall :wall :wall :none :wall :none :wall :none :wall :none :wall
-                           :wall :none :none :none :none :none :none :none :none :none :none :none :none :none :none :none :none :wall :none :none]))
+  (vec (map (fn [m] {:state m}) [:none :none :none :none :wall :wall :none :wall :none :wall :none :none :none :wall :none :none :none :none :wall :none
+                                 :none :wall :wall :none :wall :none :start :wall :wall :wall :none :wall :none :wall :none :wall :wall :wall :wall :wall
+                                 :none :none :wall :none :wall :none :none :wall :none :none :none :wall :none :wall :none :none :none :wall :none :wall
+                                 :none :wall :wall :none :wall :none :wall :wall :none :wall :wall :wall :none :wall :wall :wall :none :wall :none :wall
+                                 :wall :wall :none :none :wall :none :none :none :none :wall :none :none :none :none :wall :none :none :none :none :none
+                                 :none :wall :none :wall :wall :none :wall :wall :wall :wall :wall :wall :wall :none :wall :wall :none :wall :wall :none
+                                 :none :none :none :none :none :none :none :none :none :none :none :wall :finish :none :none :wall :none :wall :none :none
+                                 :wall :none :wall :wall :none :none :wall :wall :wall :none :none :wall :none :wall :wall :wall :none :wall :wall :none
+                                 :wall :wall :wall :none :none :wall :wall :none :wall :wall :wall :wall :none :wall :none :none :none :wall :none :none
+                                 :wall :none :none :none :wall :wall :none :none :none :none :none :wall :none :wall :none :wall :none :wall :none :none
+                                 :none :none :wall :wall :wall :none :none :wall :none :none :wall :wall :wall :wall :none :wall :none :wall :wall :none
+                                 :none :wall :wall :none :none :none :none :wall :wall :wall :wall :none :none :none :none :wall :none :none :wall :wall
+                                 :none :wall :none :none :wall :none :wall :wall :none :none :wall :none :none :wall :none :wall :none :none :none :none
+                                 :none :wall :wall :none :wall :none :none :wall :none :none :none :none :wall :wall :wall :wall :wall :wall :none :wall
+                                 :none :none :wall :none :wall :none :none :wall :none :wall :wall :wall :wall :none :none :wall :none :none :none :wall
+                                 :wall :none :wall :none :wall :none :none :wall :none :wall :none :none :none :none :none :wall :none :wall :none :wall
+                                 :wall :none :wall :none :wall :none :none :wall :wall :wall :none :wall :none :none :none :none :none :none :none :wall
+                                 :wall :none :wall :wall :wall :none :none :none :none :none :none :wall :wall :wall :wall :wall :none :wall :wall :wall
+                                 :wall :none :wall :none :wall :wall :wall :wall :wall :wall :wall :wall :none :wall :none :wall :none :wall :none :wall
+                                 :wall :none :none :none :none :none :none :none :none :none :none :none :none :none :none :none :none :wall :none :none])))
 
 (rf/reg-event-db
  :start-maze
  (fn [db _]
-   (assoc db :maze test-maze)))
+   (-> db
+       (assoc :maze test-maze)
+       (assoc :path #{})
+       (assoc :start 26)
+       (assoc :finish 132))))
 
 (comment (rf/dispatch [:start-maze]))
 ;; -- After-Load -----------------------------------------------------
