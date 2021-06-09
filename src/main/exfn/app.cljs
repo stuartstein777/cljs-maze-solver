@@ -9,24 +9,25 @@
   (map vector (iterate inc 0) col))
 
 ;; -- Reagent Forms --------------------------------------------------
-(defn maze-tile [i {:keys [state] :as tile}]
+(defn maze-tile [path i {:keys [state] :as tile}]
   (let [attr {:key i
               :on-click #(rf/dispatch [:toggle-cell i])}]
     ({:wall [:div.map-tile.wall attr]
-      :none [:div.map-tile.open 
+      :path [:div.map-tile.path
              attr
              [:div {:style {:border-bottom "1px dotted white"
-                            :border-right "1px dotted white"
-                            :width  "50%"
-                            :height "50%"}}]
+                            :border-right  "1px dotted white"
+                            :width         "50%"
+                            :height        "50%"}}]
              [:div {:style {:border-bottom "1px dotted white"
-                            :width  "50%"
-                            :height "50%"}}]
+                            :width         "50%"
+                            :height        "50%"}}]
              [:div {:style {:border-right "1px dotted white"
-                            :width  "50%"
-                            :height "50%"}}]
+                            :width        "50%"
+                            :height       "50%"}}]
              [:div {:style {:width  "50%"
                             :height "50%"}}]]
+      :none [:div.map-tile.open attr]
       :start [:div.map-tile.start attr
               [:i.fas.fa-walking.walking-man]]
       :finish [:div.map-tile.finish attr
@@ -38,12 +39,14 @@
 ;; how to get index to here. map indexed
 (defn maze []
   (let [mz @(rf/subscribe [:maze])
+        path @(rf/subscribe [:path])
         tiles (->> mz
-                   (map-indexed maze-tile)
+                   (map-indexed (partial maze-tile path))
                    (partition 20)
                    (map (fn [i row] [:div.flex-container {:key (str "r" i)} row]) (range 20)))]
     [:div {:style {:border "4px solid black"
-                   :width 800}}tiles]))
+                   :width 800}}
+     tiles]))
 
 (defn start-and-finish []
   (let [start-btn-title @(rf/subscribe [:start-btn-title])
@@ -60,6 +63,9 @@
      [:button.btn.btn-primary.toggle-btn
       {:on-click #(rf/dispatch [:change-current-click :wall])}
       toggle-walls-btn-title]
+     [:button.btn.btn-primary
+      {:on-click #(rf/dispatch [:solve])}
+      "Solve"]
      [:div.setting-indicator (str "Setting " (subs (str setting) 1))]]))
 
 ;; -- App ------------------------------------------------------------
@@ -70,12 +76,35 @@
    [start-and-finish]])
 
 ;; -- Dev Events -----------------------------------------------------
-(rf/reg-event-db
- :set-wall
- (fn [db _]
-   (assoc db :setting :wall)))
 
-(comment (rf/dispatch [:set-wall]))
+(def test-maze 
+  (map (fn [m] {:state m}) [:none :none :none :none :wall :wall :none :wall :none :wall :none :none :none :wall :none :none :none :none :wall :none
+                           :none :wall :wall :none :wall :none :start :wall :wall :wall :none :wall :none :wall :none :wall :wall :wall :wall :wall
+                           :none :none :wall :none :wall :none :none :wall :none :none :none :wall :none :wall :none :none :none :wall :none :wall
+                           :none :wall :wall :none :wall :none :wall :wall :none :wall :wall :wall :none :wall :wall :wall :none :wall :none :wall
+                           :wall :wall :none :none :wall :none :none :none :none :wall :none :none :none :none :wall :none :none :none :none :none
+                           :none :wall :none :wall :wall :none :wall :wall :wall :wall :wall :wall :wall :none :wall :wall :none :wall :wall :none
+                           :none :none :none :none :none :none :none :none :none :none :none :wall :finish :none :none :wall :none :wall :none :none
+                           :wall :none :wall :wall :none :none :wall :wall :wall :none :none :wall :none :wall :wall :wall :none :wall :wall :none
+                           :wall :wall :wall :none :none :wall :wall :none :wall :wall :wall :wall :none :wall :none :none :none :wall :none :none
+                           :wall :none :none :none :wall :wall :none :none :none :none :none :wall :none :wall :none :wall :none :wall :none :none
+                           :none :none :wall :wall :wall :none :none :wall :none :none :wall :wall :wall :wall :none :wall :none :wall :wall :none
+                           :none :wall :wall :none :none :none :none :wall :wall :wall :wall :none :none :none :none :wall :none :none :wall :wall
+                           :none :wall :none :none :wall :none :wall :wall :none :none :wall :none :none :wall :none :wall :none :none :none :none
+                           :none :wall :wall :none :wall :none :none :wall :none :none :none :none :wall :wall :wall :wall :wall :wall :none :wall
+                           :none :none :wall :none :wall :none :none :wall :none :wall :wall :wall :wall :none :none :wall :none :none :none :wall
+                           :wall :none :wall :none :wall :none :none :wall :none :wall :none :none :none :none :none :wall :none :wall :none :wall
+                           :wall :none :wall :none :wall :none :none :wall :wall :wall :none :wall :none :none :none :none :none :none :none :wall
+                           :wall :none :wall :wall :wall :none :none :none :none :none :none :wall :wall :wall :wall :wall :none :wall :wall :wall
+                           :wall :none :wall :none :wall :wall :wall :wall :wall :wall :wall :wall :none :wall :none :wall :none :wall :none :wall
+                           :wall :none :none :none :none :none :none :none :none :none :none :none :none :none :none :none :none :wall :none :none]))
+
+(rf/reg-event-db
+ :start-maze
+ (fn [db _]
+   (assoc db :maze test-maze)))
+
+(comment (rf/dispatch [:start-maze]))
 ;; -- After-Load -----------------------------------------------------
 ;; Do this after the page has loaded.
 ;; Initialize the initial db state.

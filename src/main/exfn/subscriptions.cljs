@@ -30,3 +30,8 @@
  :setting
  (fn [db _]
    (db :setting)))
+
+(rf/reg-sub
+ :path
+ (fn [db _]
+   (db :path)))

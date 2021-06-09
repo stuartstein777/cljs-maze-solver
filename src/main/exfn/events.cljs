@@ -1,5 +1,6 @@
 (ns exfn.events
-  (:require [re-frame.core :as rf]))
+  (:require [re-frame.core :as rf]
+            [exfn.solver :as sve]))
 
 (rf/reg-event-db
  :initialize
@@ -18,25 +19,46 @@
  (fn [{:keys [finish setting start] :as db} [_ i]]
    (cond
      (= setting :wall)
-     (update-in db [:maze i :state] #({:none :wall :wall :none :start :none :finish :none} %))
+     (update-in db [:maze i :state] #({:none :wall :wall :none :start :none :finish :none :path :wall} %))
 
      (= setting :start)
      (-> db
          (cond-> start
-                 (assoc-in [:maze start :state] :none))
+           (assoc-in [:maze start :state] :none))
          (assoc-in [:maze i :state] :start)
          (assoc :start i))
 
      (= setting :finish)
      (-> db
          (cond-> finish
-                (assoc-in [:maze finish :state] :none))
+           (assoc-in [:maze finish :state] :none))
          (assoc-in [:maze i :state] :finish)
          (assoc :finish i)))))
 
 (rf/reg-event-db
  :change-current-click
  (fn [db [_ cur]]
-     (assoc db :setting cur)))
+   (assoc db :setting cur)))
 
+(defn debug [o]
+  (prn o)
+  o)
+
+(rf/reg-event-db
+ :solve
+ (fn [{:keys [maze] :as db} _]
+   (let [prepared-maze (->> maze
+                            (map :state)
+                            (partition 20)
+                            (map vec)
+                            vec)
+         path (->> (sve/find-path prepared-maze)
+                   (drop 1)
+                   (butlast))
+         maze-route (->> path
+                         (map (fn [[x y]] (+ (* 20 x) y)))
+                         (set))]
+     (-> db 
+         (assoc :path path)
+         (assoc :maze (vec (map-indexed (fn [idx tile] (if (maze-route idx) {:state :path} tile)) maze)))))))
 
