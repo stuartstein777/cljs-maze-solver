@@ -62,21 +62,3 @@
 (defn debug [o]
   (prn o)
   o)
-
-(rf/reg-event-db
- :solve
- (fn [{:keys [maze] :as db} _]
-   (let [prepared-maze (->> maze
-                            (map :state)
-                            (partition 20)
-                            (map vec)
-                            vec)
-         path (->> (sve/find-path prepared-maze)
-                   (drop 1)
-                   (butlast))
-         maze-route (->> path
-                         (map (fn [[x y]] (+ (* 20 x) y)))
-                         (set))]
-     (-> db 
-         (assoc :path maze-route)))))
-

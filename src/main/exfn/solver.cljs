@@ -95,9 +95,7 @@
                            (partition 20)
                            (map vec)
                            vec)
-        path (->> (find-path prepared-maze)
-                  (drop 1)
-                  (butlast))]
+        path (->> (find-path prepared-maze))]
     (->> path
          (map (fn [[x y]] (+ (* 20 x) y)))
          (set))))

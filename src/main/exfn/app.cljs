@@ -65,9 +65,6 @@
      [:button.btn.btn-primary.toggle-btn
       {:on-click #(rf/dispatch [:change-current-click :wall])}
       toggle-walls-btn-title]
-     [:button.btn.btn-primary
-      {:on-click #(rf/dispatch [:solve])}
-      "Solve"]
      [:label.no-solution
       {:style {:visibility (if (= #{} path) :visible :hidden)}}
       "No solution!"]
