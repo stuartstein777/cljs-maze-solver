@@ -7,7 +7,26 @@
  (fn [_ _]
    {:finish           nil
     :finish-btn-title "Select Finish"
-    :maze             (into [] (for [_ (range 0 (* 20 20))] {:state :none}))
+    :maze             (vec (map (fn [cell] {:state cell}) [:none :none :none :none :wall :wall :none :wall :none :wall :none :none :none :wall :none :none :none :none :wall :none
+                                                           :none :wall :wall :none :wall :none :none :wall :wall :wall :none :wall :none :wall :none :wall :wall :wall :wall :wall
+                                                           :none :none :wall :none :wall :none :none :wall :none :none :none :wall :none :wall :none :none :none :wall :none :wall
+                                                           :none :wall :wall :none :wall :none :wall :wall :none :wall :wall :wall :none :wall :wall :wall :none :wall :none :wall
+                                                           :wall :wall :none :none :wall :none :none :none :none :wall :none :none :none :none :wall :none :none :none :none :none
+                                                           :none :wall :none :wall :wall :none :wall :wall :wall :wall :wall :wall :wall :none :wall :wall :none :wall :wall :none
+                                                           :none :none :none :none :none :none :none :none :none :none :none :wall :none :none :none :wall :none :wall :none :none
+                                                           :wall :none :wall :wall :none :none :wall :wall :wall :none :none :wall :none :wall :wall :wall :none :wall :wall :none
+                                                           :wall :wall :wall :none :none :wall :wall :none :wall :wall :wall :wall :none :wall :none :none :none :wall :none :none
+                                                           :wall :none :none :none :wall :wall :none :none :none :none :none :wall :none :wall :none :wall :none :wall :none :none
+                                                           :none :none :wall :wall :wall :none :none :wall :none :none :wall :wall :wall :wall :none :wall :none :wall :wall :none
+                                                           :none :wall :wall :none :none :none :none :wall :wall :wall :wall :none :none :none :none :wall :none :none :wall :wall
+                                                           :none :wall :none :none :wall :none :wall :wall :none :none :wall :none :none :wall :none :wall :none :none :none :none
+                                                           :none :wall :wall :none :wall :none :none :wall :none :none :none :none :wall :wall :wall :wall :wall :wall :none :wall
+                                                           :none :none :wall :none :wall :none :none :wall :none :wall :wall :wall :wall :none :none :wall :none :none :none :wall
+                                                           :wall :none :wall :none :wall :none :none :wall :none :wall :none :none :none :none :none :wall :none :wall :none :wall
+                                                           :wall :none :wall :none :wall :none :none :wall :wall :wall :none :wall :none :none :none :none :none :none :none :wall
+                                                           :wall :none :wall :wall :wall :none :none :none :none :none :none :wall :wall :wall :wall :wall :none :wall :wall :wall
+                                                           :wall :none :wall :none :wall :wall :wall :wall :wall :wall :wall :wall :none :wall :none :wall :none :wall :none :wall
+                                                           :wall :none :none :none :none :none :none :none :none :none :none :none :none :none :none :none :none :wall :none :none]))
     :path             #{}
     :setting          :wall
     :start            nil
