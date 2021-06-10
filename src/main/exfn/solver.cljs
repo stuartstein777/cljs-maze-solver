@@ -1,11 +1,31 @@
 (ns exfn.solver
   (:require [clojure.set :as set]))
 
+(defn path-val-to-xy [xy]
+  [(quot xy 20) (rem xy 20)])
+
+(defn get-route-markers [route]
+  (map (fn [idx yx]
+         (let [[y x] (path-val-to-xy yx)
+               [prev-y prev-x] (path-val-to-xy (nth route (dec idx)))
+               [next-y next-x] (path-val-to-xy (nth route (inc idx)))]
+           (cond (= x next-x prev-x) [yx :vertical]
+                 (= y next-y prev-y) [yx :horizontal]
+                 (and (> prev-y y) (> next-x x) (= y next-y)) [yx :left-down]
+                 (and (> prev-x x) (= prev-y y) (> next-y y)) [yx :left-down]
+                 (and (< prev-y y) (> next-x x) (= y next-y)) [yx :down-right]
+                 (and (= next-x x) (< next-y y) (> prev-x x)) [yx :down-right]
+                 (and (= prev-y y) (> next-y y) (< prev-x x)) [yx :right-down]
+                 (and (> x next-x) (> prev-y y) (= x prev-x)) [yx :right-down]
+                 (and (= prev-y y) (< next-y y) (< prev-x x)) [yx :down-left]
+                 (and (> x next-x) (= x prev-x) (< prev-y y)) [yx :down-left])))
+       (range 1 (count route))
+       (butlast (rest route))))
+
 (defn get-dimensions [map]
   [(count (first map)) (count map)])
 
 (defn find-in-map [m to-find [max-x max-y]]
-  (prn to-find)
   (first (for [y (range max-y)
                x (range max-x)
                :when (= to-find (get-in m [y x]))]
@@ -67,7 +87,6 @@
 
 (defn find-path [m]
   (let [map-info (get-map-info m)]
-    (prn map-info)
     (loop [closed {}
            open (assoc {} (:start map-info) {:cell   (:start map-info)
                                              :parent nil
@@ -89,34 +108,48 @@
                 (find-route (map-info :start) updated-closed [(map-info :goal)])
                 (recur updated-closed updated-open)))))))
 
-(defn solve [maze] 
+(defn solve [maze]
   (let [prepared-maze (->> maze
                            (map :state)
                            (partition 20)
                            (map vec)
                            vec)
-        path (->> (find-path prepared-maze))]
-    (->> path
-         (map (fn [[x y]] (+ (* 20 x) y)))
-         (set))))
+        path (->> (find-path prepared-maze)
+                  (map (fn [[x y]] (+ (* 20 x) y)))
+                  (get-route-markers))]
+    (zipmap (map first path) (map second path))))
 
-(comment '[[:none :none :none :none :wall :wall :none :wall :none :wall :none :none :none :wall :none :none :none :none :wall :none]
-           [:none :wall :wall :none :wall :none :start :wall :wall :wall :none :wall :none :wall :none :wall :wall :wall :wall :wall]
-           [:none :none :wall :none :wall :none :none :wall :none :none :none :wall :none :wall :none :none :none :wall :none :wall]
-           [:none :wall :wall :none :wall :none :wall :wall :none :wall :wall :wall :none :wall :wall :wall :none :wall :none :wall]
-           [:wall :wall :none :none :wall :none :none :none :none :wall :none :none :none :none :wall :none :none :none :none :none]
-           [:none :wall :none :wall :wall :none :wall :wall :wall :wall :wall :wall :wall :none :wall :wall :none :wall :wall :none]
-           [:none :none :none :none :none :none :none :none :none :none :none :wall :finish :none :none :wall :none :wall :none :none]
-           [:wall :none :wall :wall :none :none :wall :wall :wall :none :none :wall :none :wall :wall :wall :none :wall :wall :none]
-           [:wall :wall :wall :none :none :wall :wall :none :wall :wall :wall :wall :none :wall :none :none :none :wall :none :none]
-           [:wall :none :none :none :wall :wall :none :none :none :none :none :wall :none :wall :none :wall :none :wall :none :none]
-           [:none :none :wall :wall :wall :none :none :wall :none :none :wall :wall :wall :wall :none :wall :none :wall :wall :none]
-           [:none :wall :wall :none :none :none :none :wall :wall :wall :wall :none :none :none :none :wall :none :none :wall :wall]
-           [:none :wall :none :none :wall :none :wall :wall :none :none :wall :none :none :wall :none :wall :none :none :none :none]
-           [:none :wall :wall :none :wall :none :none :wall :none :none :none :none :wall :wall :wall :wall :wall :wall :none :wall]
-           [:none :none :wall :none :wall :none :none :wall :none :wall :wall :wall :wall :none :none :wall :none :none :none :wall]
-           [:wall :none :wall :none :wall :none :none :wall :none :wall :none :none :none :none :none :wall :none :wall :none :wall]
-           [:wall :none :wall :none :wall :none :none :wall :wall :wall :none :wall :none :none :none :none :none :none :none :wall]
-           [:wall :none :wall :wall :wall :none :none :none :none :none :none :wall :wall :wall :wall :wall :none :wall :wall :wall]
-           [:wall :none :wall :none :wall :wall :wall :wall :wall :wall :wall :wall :none :wall :none :wall :none :wall :none :wall]
-           [:wall :none :none :none :none :none :none :none :none :none :none :none :none :none :none :none :none :wall :none :none]])
+
+(def test-map [:start :none :none :none :wall :wall :none :wall :none :wall :none :none :none :wall :none :none :none :finish :wall :none
+               :none :wall :wall :none :wall :none :none :wall :wall :wall :none :wall :none :wall :none :wall :wall :wall :wall :wall
+               :none :none :wall :none :wall :none :none :wall :none :none :none :wall :none :wall :none :none :none :wall :none :wall
+               :none :wall :wall :none :wall :none :wall :wall :none :wall :wall :wall :none :wall :wall :wall :none :wall :none :wall
+               :wall :wall :none :none :wall :none :none :none :none :none :none :none :none :none :wall :none :none :none :none :none
+               :none :wall :none :wall :wall :none :wall :wall :wall :wall :wall :wall :wall :none :wall :wall :none :wall :wall :none
+               :none :none :none :none :none :none :none :none :none :none :none :wall :none :none :none :wall :none :wall :none :none
+               :wall :none :wall :wall :none :none :wall :wall :wall :none :none :wall :none :wall :wall :wall :none :wall :wall :none
+               :wall :wall :wall :none :none :wall :wall :none :wall :wall :wall :wall :none :wall :none :none :none :wall :none :none
+               :wall :none :none :none :wall :wall :none :none :none :none :none :wall :none :wall :none :wall :none :wall :none :none
+               :none :none :wall :wall :wall :none :none :wall :none :none :wall :wall :wall :wall :none :wall :none :wall :wall :none
+               :none :wall :wall :none :none :none :none :wall :wall :wall :wall :none :none :none :none :wall :none :none :wall :wall
+               :none :wall :none :none :wall :none :wall :wall :none :none :wall :none :none :wall :none :wall :none :none :none :none
+               :none :wall :wall :none :wall :none :none :wall :none :none :none :none :wall :wall :wall :wall :wall :wall :none :wall
+               :none :none :wall :none :wall :none :none :wall :none :wall :wall :wall :wall :none :none :wall :none :none :none :wall
+               :wall :none :wall :none :wall :none :none :wall :none :wall :none :none :none :none :none :wall :none :wall :none :wall
+               :wall :none :wall :none :wall :none :none :wall :wall :wall :none :wall :none :none :none :none :none :none :none :wall
+               :wall :none :wall :wall :wall :none :none :none :none :none :none :wall :wall :wall :wall :wall :none :wall :wall :wall
+               :wall :none :wall :none :wall :wall :wall :wall :wall :wall :wall :wall :none :wall :none :wall :none :wall :none :wall
+               :wall :none :none :none :none :none :none :none :none :none :none :none :none :none :none :none :none :wall :none :none])
+
+(comment
+  (let [path (->> test-map
+                  (map (fn [cell] {:state cell}))
+                  (vec)
+                  (solve)
+                  (get-route-markers))]
+    (zipmap (map first path) (map second path))))
+
+
+
+
+

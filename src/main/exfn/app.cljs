@@ -8,25 +8,62 @@
 (defn keyed-collection [col]
   (map vector (iterate inc 0) col))
 
+(def borders
+  {:horizontal {:topl {:border-bottom "3px dotted black"
+                       :border-right  "0px"}
+                :topr {:border-bottom "3px dotted black"}
+                :botl {:border-right "0px"}}
+   :vertical   {:topl {:border-bottom "0px"
+                       :border-right  "3px dotted black"}
+                :topr {:border-bottom "0px"}
+                :botl {:border-right "3px dotted black"}}
+   :right-down {:topl {:border-bottom "3px dotted black"
+                       :border-right  "0px dotted black"}
+                :topr {:border-bottom "0px"}
+                :botl {:border-right "3px dotted black"}}
+   :left-down {:topl {:border-bottom "0px dotted black"
+                       :border-right  "0px dotted black"}
+                :topr {:border-bottom "3px dotted black"}
+                :botl {:border-right "3px dotted black"}}
+   :down-left {:topl {:border-bottom "3px dotted black"
+                      :border-right  "3px dotted black"}
+               :topr {:border-bottom "0px"}
+               :botl {:border-right "0px"}}
+   :down-right {:topl {:border-bottom "0px"
+                      :border-right  "3px dotted black"}
+               :topr {:border-bottom "3px dotted black"}
+               :botl {:border-right "0px"}}
+   :default    {:topl {:border-bottom "0px"
+                       :border-right "0px"}}})
+
 ;; -- Reagent Forms --------------------------------------------------
-(defn maze-tile [path i {:keys [state] :as tile}]
-  (let [attr {:key i
+(defn maze-tile [path i {:keys [state]}]
+  (let [path-cells (->> path keys set)
+        marker (if (path i)
+                 (borders (path i))
+                 (:default borders))
+        attr {:key i
               :on-click #(rf/dispatch [:toggle-cell i])}]
     ({:wall [:div.map-tile.wall attr]
       :none [:div.map-tile.open
              {:key i
               :on-click #(rf/dispatch [:toggle-cell i])
-              :style {:background-color (if (path i) "goldenrod" "white")}}
-             [:div {:style {:border-bottom "0px dotted grey"
-                            :border-right  "0px dotted grey"
+              :style {:background-color (if (path-cells i) "#7dbf84" "white")
+                      :border (if (path-cells i) "1px dotted #7dbf84" "1px dotted lightgray")}}
+             ;top left
+             [:div {:style {:border-bottom (-> marker :topl :border-bottom)
+                            :border-right  (-> marker :topl :border-right)
                             :width         "50%"
                             :height        "50%"}}]
-             [:div {:style {:border-bottom "0px dotted white"
+             ; top right
+             [:div {:style {:border-bottom (-> marker :topr :border-bottom)
                             :width         "50%"
                             :height        "50%"}}]
-             [:div {:style {:border-right "0px dotted white"
+             ; bottom left
+             [:div {:style {:border-right (-> marker :botl :border-right)
                             :width        "50%"
                             :height       "50%"}}]
+             ; bottom right
              [:div {:style {:width  "50%"
                             :height "50%"}}]]
       :start [:div.map-tile.start attr
